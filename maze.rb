@@ -1,11 +1,14 @@
 class Maze
-    attr_accessor :mazeWalls, :cell
-    def initialize(base, height)
-        @base, @height = base, height
+    def initialize(base, height, start = 0, finish = -1)
+        @base, @height, @start = base, height, start
+    	@finish = (finish == -1) ? @base*@height - 1 : finish
         @mazeWalls = Array.new(@base*(@height-1)+(@base-1)*@height, true)
+        @mazeCells = Array.new @base*@height, false
+        @solutionStack = Array.new
         createMaze
-        displayMaze
-        runMaze
+        getMazeSolution
+        #displayMaze
+        #runMaze
     end
     
     def createMaze
@@ -30,7 +33,7 @@ class Maze
     def allWallsIntact( cell = @cell )
     	check = true
     	cell.dirs.each do |dir|
-    		if !mazeWalls[cell.wallLoc dir]
+    		if !@mazeWalls[cell.wallLoc dir]
     			check = false
     		end
     	end
@@ -50,6 +53,50 @@ class Maze
     def knockDownWall ( cell = @cell, dir )
     	@mazeWalls[cell.wallLoc dir] = false
     end
+    
+    def getMazeSolution start = @start, finish = @finish
+		@cell = MazeCell.new start, @base, @height
+		@solutionStack = Array.new
+		while @cell.loc != finish
+			if unvisitedNeighbors.length > 0
+				nextCell = unvisitedNeighbors.sample
+				@solutionStack.push @cell.loc
+				@mazeCells[@cell.loc] = true
+				@cell = nextCell
+			else
+				@mazeCells[@cell.loc] = true
+				@cell.loc = @solutionStack.pop
+			end
+			#displaySolvedMaze [@cell.loc]
+			#puts "Running..."
+		end
+		@solutionStack.push finish
+	end
+	def visited (cell = @cell )
+		@mazeCells[cell.loc]
+	end
+	def intactWall ( cell = @cell, dir )
+		@mazeWalls[cell.wallLoc dir]
+	end
+	def availableNeighbors ( cell = @cell )
+		n = {}
+		cell.neighbors.each do |dir, neighbor|
+			if !intactWall dir
+				n[dir] = neighbor
+			end
+		end
+		n
+	end
+	
+	def unvisitedNeighbors ( cell = @cell )
+		n = Array.new
+		cell.neighbors.each do |dir, neighbor|
+			if !intactWall dir and !visited neighbor
+				n.push neighbor
+			end
+		end
+		n
+	end
 =begin
     def displayMaze
     	disp = ASCIIMazeDisplay.new @base, @height, @mazeWalls

@@ -1,7 +1,10 @@
-class ASCIIMazeDisplay
-	attr_accessor :loc
-	def initialize(base, height, mazeWalls, pathStack = [])
-		@base, @height, @mazeWalls, @pathStack = base, height, mazeWalls, pathStack
+require './maze'
+require './mazerunner'
+
+class ASCIIMaze < Maze 
+	def initialize(base, height, start = 0, finish = -1)
+		super base, height, start, finish
+		#@base, @height, @mazeWalls, @pathStack = base, height, mazeWalls, pathStack
 		@gridBase = 2*@base+1
 		@gridHeight = 2*@height+1
 	end
@@ -37,7 +40,7 @@ class ASCIIMazeDisplay
 						gridStr += @mazeWalls[wallLoc] ? '|' : ' '
 						wallLoc += 1
 					else
-						gridStr += (@pathStack.member? cellLoc) ? '*' : ' '
+						gridStr += (@solutionStack.member? cellLoc) ? '*' : ' '
 						cellLoc += 1
 					end
 				end
