@@ -1,4 +1,5 @@
 class Maze
+	attr_accessor :start, :finish
     def initialize(base, height, start = 0, finish = -1)
         @base, @height, @start = base, height, start
     	@finish = (finish == -1) ? @base*@height - 1 : finish
@@ -6,7 +7,7 @@ class Maze
         @mazeCells = Array.new @base*@height, false
         @solutionStack = Array.new
         createMaze
-        getMazeSolution
+        #getSolution
         #displayMaze
         #runMaze
     end
@@ -53,8 +54,9 @@ class Maze
     def knockDownWall ( cell = @cell, dir )
     	@mazeWalls[cell.wallLoc dir] = false
     end
-    
-    def getMazeSolution start = @start, finish = @finish
+ 
+    def getSolution start = @start, finish = @finish
+    	@mazeCells = Array.new @base*@height, false
 		@cell = MazeCell.new start, @base, @height
 		@solutionStack = Array.new
 		while @cell.loc != finish
@@ -65,13 +67,16 @@ class Maze
 				@cell = nextCell
 			else
 				@mazeCells[@cell.loc] = true
+				if @solutionStack.empty? 
+					puts "Error!!!"
+					return Array.new
+				end
 				@cell.loc = @solutionStack.pop
 			end
-			#displaySolvedMaze [@cell.loc]
-			#puts "Running..."
 		end
 		@solutionStack.push finish
 	end
+
 	def visited (cell = @cell )
 		@mazeCells[cell.loc]
 	end
@@ -88,7 +93,7 @@ class Maze
 		n
 	end
 	
-	def unvisitedNeighbors ( cell = @cell )
+	def unvisitedNeighbors cell = @cell
 		n = Array.new
 		cell.neighbors.each do |dir, neighbor|
 			if !intactWall dir and !visited neighbor
@@ -97,15 +102,6 @@ class Maze
 		end
 		n
 	end
-=begin
-    def displayMaze
-    	disp = ASCIIMazeDisplay.new @base, @height, @mazeWalls
-    	disp.display
-    end
-    def runMaze
-    	runner = MazeRunner.new @base, @height, @mazeWalls
-    end
-=end
 end
 
 class MazeCell
